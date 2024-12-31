@@ -25,35 +25,33 @@ app.get("/api/hello", function (req, res) {
 });
 
 app.get('/api/:date?', (req, res) => {
-  const value = req.params.date;
- 
-  if (!value) {
-    const now = new Date();
-    return res.send({
-      unix: now.getTime(),
-      utc: now.toUTCString(),
-    });
-  }
-  // Verificar si es un timestamp Unix (número largo)
-  const unixTimestamp = !isNaN(Number(value)) && value.length === 13; // Unix timestamp tiene 13 dígitos
-  const utcDate = !isNaN(Date.parse(value)); // Verificar si es una fecha UTC válida
-
-
-  if (unixTimestamp) {
-    // Si es un timestamp Unix válido
-    const unix = Number(value);
-    const utc = new Date(unix).toUTCString();
-    res.send({ 'unix': unix, 'utc': utc });
-  } else if (utcDate) {
-    // Si es una fecha UTC válida
-    const unix = new Date(value).getTime();
-    const utc = new Date(value).toUTCString();
-    res.send({ 'unix': unix, 'utc': utc });
+  const dateParam = req.params.date;
+  
+  let date;
+  
+  // Si no se pasa un parámetro de fecha, se usa la fecha actual
+  if (!dateParam) {
+    date = new Date();
   } else {
-    // Si no es válido, devolver error
-    res.send({ error: "Invalid Date" });
+    // Intenta parsear la fecha, primero como Unix (número) y luego como UTC
+    if (!isNaN(dateParam)) {
+      date = new Date(Number(dateParam)); // Unix timestamp
+    } else {
+      date = new Date(dateParam); // Intentar como fecha UTC
+    }
+  }
+  
+  // Si la fecha es válida, devuelve los resultados en formato Unix y UTC
+  if (date.getTime()) {
+    res.json({
+      unix: date.getTime(),
+      utc: date.toUTCString()
+    });
+  } else {
+    res.json({ error: "Invalid Date" });
   }
 });
+
 
 
 
